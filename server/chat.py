@@ -14,7 +14,15 @@ class GeneralAPI(object):
             base_url=self.api_base,
         )
 
-    def chat(self, prompt, max_tokens=512, temperature=0.7, top_p=0.1, system_message=None):
+    def chat(
+        self, 
+        prompt, 
+        max_tokens=512, 
+        temperature=0.7, 
+        top_p=0.1, 
+        system_message=None, 
+        stream=False
+        ):
         # system_message="You are a helpful assistant."
         if system_message is not None:
             messages = [
@@ -31,10 +39,13 @@ class GeneralAPI(object):
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
-            top_p=top_p
+            top_p=top_p,
+            stream=stream
         )
-        # print(response)
-        return response.choices[0].message.content
+        if stream:
+            return response
+        else:        
+            return response.choices[0].message.content
 
     def chat_with_function_call(self, prompt, tools, system_message='', tool_choice=None):
         messages = []
@@ -94,3 +105,40 @@ class GeneralAPI(object):
         return response.choices[0].message.content
         
 
+    def chat_with_thinking(
+        self, 
+        prompt, 
+        max_tokens=512, 
+        temperature=0.7, 
+        top_p=0.1, 
+        system_message=None, 
+        stream=False,
+        thinking=True,
+    ):
+        # system_message="You are a helpful assistant."
+        if system_message is not None:
+            messages = [
+                {"role": "system", "content": f"{system_message}"},
+                {"role": "user", "content": f"{prompt}"},
+            ]
+        else:
+            messages = [
+                {"role": "user", "content": f"{prompt}"},
+            ]
+        
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            stream=stream,
+            extra_body={
+                "top_k": 20, 
+                "chat_template_kwargs": {"enable_thinking": thinking},
+            },
+        )
+        if stream:
+            return response
+        else:        
+            return response.choices[0].message.content
