@@ -162,6 +162,74 @@ def test_case_016():
     print()
 
 
+def test_case_017():
+    server = get_chat_api(ChatModelType.DOUBAO_1_5_PRO_32K)
+    sys_prompt = "你是一个语音对话场景的意图识别专家，能结合上下文分析出用户是否有打断对话的意图。若用户有打断意图，输出interrupt，否则输出continue。 "
+    texts = ["闭嘴", "请安静", "安静一会儿好吗", "我有点困了，要不要去喝杯咖啡？"]
+    for text in texts:
+        response = server.chat(text, system_message=sys_prompt, max_tokens=10, temperature=0.1, top_p=0.1)
+        print(text, " | ", response)
+
+
+def test_case_018():
+    server = get_chat_api(ChatModelType.INTENTION)
+    sys_prompt = "你是一个语音对话场景的意图识别专家，能结合上下文分析出用户是否有打断对话的意图。若用户有打断意图，输出interrupt，否则输出continue。 "
+    texts = ["闭嘴", "请安静", "安静一会儿好吗", "我有点困了，要不要去喝杯咖啡？"]
+    for text in texts:
+        response = server.chat(text, system_message=sys_prompt, max_tokens=1, temperature=0.1, top_p=0.1)
+        print(text, " | ", response)
+
+
+def test_case_019():
+    server = get_chat_api(ChatModelType.INTENTION)
+    sys_prompt = "你是一个语音对话场景的意图识别专家，能结合上下文分析出用户是否有打断对话的意图。若用户有打断意图，输出interrupt，否则输出continue。 "
+    texts = open("eou/datas/wait.txt", "r")
+    corrects = counts = 0
+    for text in texts:
+        text = text.strip()
+        if len(text) == 0:
+            continue
+        response = server.chat(text, system_message=sys_prompt, max_tokens=10, temperature=0.1, top_p=0.1)
+        counts += 1
+        if response == "interrupt":
+            corrects += 1
+        else:
+            print(text, " | ", response)
+    print(f"accuracy: {corrects/counts}")
+
+
+def test_case_020():
+    server = get_chat_api(ChatModelType.QWEN3_0_6B)
+    sys_prompt = "你是一个语音对话场景的意图识别专家，能结合上下文分析出用户是否有打断对话的意图。若用户有打断意图，输出interrupt，否则输出continue。 "
+    texts = ["闭嘴", "请安静", "安静一会儿好吗", "我有点困了，要不要去喝杯咖啡？"]
+    for text in texts:
+        response = server.chat_with_thinking(text, system_message=sys_prompt, max_tokens=1, temperature=0.1, top_p=0.1, thinking=False)
+        print(text, " | ", response)
+    print('------------------')
+        
+        
+def test_case_021():
+    server = get_chat_api(ChatModelType.QWEN2_5_0_5B_INSTRUCT)
+    sys_prompt = "你是一个语音对话场景的意图识别专家，能结合上下文分析出用户是否有打断对话的意图。若用户有打断意图，输出interrupt，否则输出continue。 "
+    texts = ["闭嘴", "请安静", "安静一会儿好吗", "我有点困了，要不要去喝杯咖啡？"]
+    for text in texts:
+        response = server.chat(text, system_message=sys_prompt, max_tokens=1, temperature=0.1, top_p=0.1)
+        print(text, " | ", response)
+        
+
+def test_case_022():
+    server = get_chat_api(ChatModelType.QWEN3_0_6B)
+    prompt = "请给我讲个故事吧。"
+    system_message = "请按如下格式进行输出：在输出的结果前添加'让我想想'。"
+
+    response = server.chat_with_thinking(
+        prompt, max_tokens=256, temperature=0.1, top_p=0.1, thinking=False, stream=True, system_message=system_message
+    )
+    for i, chunk in enumerate(response):
+        print(chunk.choices[0].delta.content or "", end="")
+    print()
+
+
 if __name__ == '__main__':
     # test_case_001()
     # test_case_002()
@@ -178,4 +246,10 @@ if __name__ == '__main__':
     # test_case_013()
     # test_case_014()
     # test_case_015()
-    test_case_016()
+    # test_case_016()
+    # test_case_017()
+    # test_case_018()
+    # test_case_019()
+    # test_case_020()
+    # test_case_021()
+    test_case_022()
