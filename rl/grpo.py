@@ -111,6 +111,15 @@ dataset = datasets.load_dataset("json", data_files="seed-grpo.json")["train"]
 dataset = dataset.rename_column("recover_label", "recover_ground_truth")
 dataset = dataset.rename_column("curve_label", "curve_ground_truth")
 
+def fix_file_path(example):
+    example["images"][0] = example["images"][0].replace("datas/argos-dp", "")
+    return example  
+
+print(dataset[0]["images"])
+dataset = dataset.map(fix_file_path, num_proc=4)
+print(dataset[0]["images"])
+
+
 print("dataset num: ", len(dataset))
 training_args = GRPOConfig(
     output_dir="train/seed/grpo_outputs",
